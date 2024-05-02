@@ -1,22 +1,28 @@
 import { Component } from "react";
-import { db } from "../../config/Firebase";
+import { db, dbImage } from "../../config/Firebase";
 import {
   addDoc,
   collection,
   deleteDoc,
   doc,
   getDocs,
+  updateDoc,
 } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 class Tindakan extends Component {
   constructor(props) {
     super(props);
     this.state = {
       tindakans: [],
+      id: null,
       namaTindakan: null,
+      deskripsiTindakan: null,
+      fotoTindakan: null,
       isProses: false,
+      isEdit: false,
     };
   }
 
@@ -42,11 +48,22 @@ class Tindakan extends Component {
     }
   };
 
-  handleSubmit = async () => {
+  handleSubmit = async (e) => {
+    e.preventDefault();
     this.setState({ isProses: true });
+
+    const namaTindakan = this.state.namaTindakan;
+    const imageUrl = namaTindakan.toLowerCase().replace(/\s+/g, "-");
     try {
+      const imgRef = ref(dbImage, `tindakans/${imageUrl}`);
+      await uploadBytes(imgRef, this.state.fotoTindakan);
+
+      const urlFoto = await getDownloadURL(imgRef);
+
       const newTindakan = {
         nama_tindakan: this.state.namaTindakan,
+        deskripsi_tindakan: this.state.deskripsiTindakan,
+        foto_tindakan: urlFoto,
       };
       await addDoc(collection(db, "tindakans"), newTindakan);
 
@@ -55,11 +72,49 @@ class Tindakan extends Component {
       this.getAllTindakan();
       this.setState({
         namaTindakan: "",
+        deskripsiTindakan: "",
+        fotoTindakan: "",
         isProses: false,
       });
     } catch (error) {
       Swal.fire("Gagal", "Gagal menyimpan", "error");
       console.error("Error menambahkan data:", error);
+    }
+  };
+
+  handleEdit = (dokter) => {
+    const { id, nama_tindakan, deskripsi_tindakan, foto_tindakan } = dokter;
+
+    this.setState({
+      id: id,
+      namaTindakan: nama_tindakan,
+      deskripsiTindakan: deskripsi_tindakan,
+      fotoTindakan: foto_tindakan,
+      isEdit: !this.state.isEdit,
+    });
+  };
+
+  handleUpdate = async (e) => {
+    this.setState({ isProses: true });
+    e.preventDefault();
+    const { id, namaTindakan, deskripsiTindakan } = this.state;
+
+    try {
+      await updateDoc(doc(db, "tindakans", id), {
+        namaTindakan,
+        deskripsiTindakan,
+      });
+      Swal.fire("Berhasil", "Data dokter berhasil diperbarui", "success");
+      this.getAllTindakan();
+      this.setState({
+        namaTindakan: "",
+        deskripsiTindakan: "",
+        isEdit: !this.state.isEdit,
+        isProses: false,
+      });
+    } catch (error) {
+      console.error("Error updating data:", error);
+      Swal.fire("Error", "Gagal memperbarui data dokter", "error");
     }
   };
 
@@ -90,6 +145,36 @@ class Tindakan extends Component {
               required
             />
           </div>
+          <div>
+            <label>Deskripsi tindakan</label>
+            <textarea
+              type="text"
+              value={this.state.deskripsiTindakan}
+              onChange={(e) =>
+                this.setState({ deskripsiTindakan: e.target.value })
+              }
+              required
+              cols="30"
+              rows="10"></textarea>
+          </div>
+          {this.state.isEdit ? (
+            <div>
+              <img
+                src={this.state.fotoTindakan}
+                alt={this.state.namaTindakan}
+              />
+            </div>
+          ) : (
+            <div>
+              <label>Foto</label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  this.setState({ fotoTindakan: e.target.files[0] })
+                }
+              />
+            </div>
+          )}
           {this.state.isEdit ? (
             <button type="submit" onClick={this.handleUpdate}>
               Update Data
@@ -109,6 +194,7 @@ class Tindakan extends Component {
           <thead>
             <tr>
               <th>Nama Tindakan</th>
+              <th>Foto</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -117,6 +203,16 @@ class Tindakan extends Component {
               <tr key={tindakan.id}>
                 <td>
                   <Link to={tindakan.id}>{tindakan.nama_tindakan}</Link>
+                </td>
+                <td>
+                  {tindakan.foto_tindakan ? (
+                    <img
+                      src={tindakan.foto_tindakan}
+                      alt={tindakan.nama_tindakan}
+                    />
+                  ) : (
+                    "Foto tidak tersedia"
+                  )}
                 </td>
                 <td>
                   <button onClick={() => this.handleEdit(tindakan)}>
