@@ -1,38 +1,82 @@
 .App {
-  text-align: center;
+  margin: 50px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+aside {
+  width: 200px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  flex: 0 0 200px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+table {
+  border-collapse: collapse;
+  width: 100%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.form-container {
   display: flex;
   flex-direction: column;
+  width: 300px;
+}
+
+.form-container > div {
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin-bottom: 10px;
 }
 
-.App-link {
-  color: #61dafb;
+.form-container > div > label {
+  width: 100px;
+  margin-right: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.form-container > div > input {
+  flex: 1;
+}
+
+img {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100px; /* Atur lebar maksimum gambar */
+  max-height: 100px; /* Atur tinggi maksimum gambar */
+  margin: 10px; /* Beri jarak antara gambar */
+}
+
+.container {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: inline-block;
+  margin: 20px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list-item {
+  margin-bottom: 10px;
+}
+
+.list-item h5 {
+  margin: 0;
+}
+
+.list-item p {
+  margin: 0;
+  padding: 0;
 }
