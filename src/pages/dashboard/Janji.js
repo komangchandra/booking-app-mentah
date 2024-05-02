@@ -22,7 +22,7 @@ class Janji extends Component {
       tindakan: null,
       isProses: false,
       isEdit: false,
-      jenisKelamin: "Laki-laki",
+      jenisKelamin: null,
       dokterRef: null,
       jamMulai: null,
       jamSelesai: null,
@@ -36,15 +36,20 @@ class Janji extends Component {
 
   componentDidMount = () => {
     this.getAllJanji();
-    this.getAllDokter();
+    // this.getAllDokter();
     this.getAllTindakan();
   };
 
-  handleChangeJenisKelamin = (e) => {
-    this.setState({ jenisKelamin: e.target.value });
+  handleChangeJenisKelamin = async (e) => {
+    await new Promise((resolve) => {
+      this.setState({ jenisKelamin: e.target.value }, resolve);
+    });
+    const jnsKelamin = this.state.jenisKelamin;
+    console.log("JK:", jnsKelamin);
+    await this.getAllDokter(jnsKelamin);
   };
 
-  getAllDokter = async () => {
+  getAllDokter = async (jnsKelamin) => {
     try {
       const dokterCollection = collection(db, "dokters");
       const querySnapshot = await getDocs(dokterCollection);
@@ -52,7 +57,7 @@ class Janji extends Component {
       const dokterList = [];
       querySnapshot.forEach((doc) => {
         const dokterData = doc.data();
-        if (dokterData.jenis_kelamin === "Laki-laki") {
+        if (dokterData.jenis_kelamin === jnsKelamin) {
           dokterList.push({ id: doc.id, ...dokterData });
         }
       });
@@ -230,6 +235,7 @@ class Janji extends Component {
 
       // Reset nilai state setelah data berhasil ditambahkan
       this.setState({
+        jenisKelamin: "",
         dokterRef: "",
         tindakanRef: "",
         waktuTindakanRef: "",
@@ -277,6 +283,8 @@ class Janji extends Component {
       tindakan_ref,
       waktu_tindakan_ref, // tambahkan waktu_tindakan_ref
     } = janji;
+
+    console.log(janji);
 
     this.setState({
       id: id,
@@ -360,6 +368,7 @@ class Janji extends Component {
       this.getAllJanji();
 
       this.setState({
+        jenisKelamin: "",
         dokterRef: "",
         tindakanRef: "",
         jamMulai: "",
@@ -384,19 +393,25 @@ class Janji extends Component {
       { id: 2, nama: "Diproses" },
       { id: 3, nama: "Dibatalkan" },
     ];
+
+    const ganders = [{ name: "Laki-laki" }, { name: "Perempuan" }];
     return (
       <>
+        <div>
+          <label>Filter jenis kelamin:</label>
+          <select
+            onChange={this.handleChangeJenisKelamin}
+            value={this.state.bulan}>
+            <option>Pilih Jenis Kelamin</option>
+            {ganders.map((gander) => (
+              <option key={gander.name} value={gander.name}>
+                {gander.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <hr />
         <form className="form-container">
-          <div>
-            <label>Jenis Kelamin</label>
-            <select
-              value={this.state.jenisKelamin}
-              onChange={(e) => this.setState({ jenisKelamin: e.target.value })}>
-              <option>Pilih Dokter</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-          </div>
           <div>
             <label>Nama Dokter</label>
             <select

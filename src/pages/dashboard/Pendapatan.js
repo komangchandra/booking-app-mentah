@@ -32,6 +32,7 @@ class Pendapatan extends Component {
   handleMonthChange = (e) => {
     this.setState({ bulan: e.target.value });
   };
+
   handleYearChange = (e) => {
     this.setState({ tahun: parseInt(e.target.value) });
     console.log({ bulan: this.state.bulan });
@@ -133,6 +134,7 @@ class Pendapatan extends Component {
         // Buat dokumen baru di koleksi pendapatan_terapi
         await addDoc(pendapatanCollection, {
           nama_dokter: janji.dokter,
+          tindakan: janji.tindakan,
           tanggal: janji.tanggal,
           durasi: janji.durasi,
           biaya: janji.biaya,
@@ -242,6 +244,7 @@ class Pendapatan extends Component {
           <thead>
             <tr>
               <th>Nama Dokter</th>
+              <th>Tindakan</th>
               <th>Tanggal</th>
               <th>Durasi</th>
               <th>Biaya</th>
@@ -256,6 +259,7 @@ class Pendapatan extends Component {
               this.state.pendapatans.map((pendapatan) => (
                 <tr key={pendapatan.id}>
                   <td>{pendapatan.nama_dokter}</td>
+                  <td>{pendapatan.tindakan}</td>
                   <td>{pendapatan.tanggal}</td>
                   <td>{pendapatan.durasi} Menit</td>
                   <td>Rp {pendapatan.biaya.toLocaleString("id-ID")}</td>
