@@ -48,7 +48,10 @@ class Dokter extends Component {
         dokterList.push({ id: doc.id, ...doc.data() });
       });
 
-      this.setState({ dokters: dokterList });
+      await new Promise((resolve) => {
+        this.setState({ dokters: dokterList }, resolve);
+      });
+      console.log(this.state.dokters);
     } catch (error) {
       console.error("Error fetching dokter data:", error);
       throw error;
@@ -309,3 +312,14 @@ class Dokter extends Component {
 }
 
 export default Dokter;
+
+// const dokters = [
+//   {
+//     nama: "dr Riyanti",
+//     jenis_kelamin: "Perempuan",
+//   },
+//   {
+//     nama: "dr Handoko",
+//     jenis_kelamin: "Laki-laki",
+//   },
+// ];

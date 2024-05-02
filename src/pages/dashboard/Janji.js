@@ -17,6 +17,7 @@ class Janji extends Component {
     this.state = {
       janjis: [],
       dokters: [],
+      dokterFilter: [],
       tindakans: [],
       durasi: null,
       tindakan: null,
@@ -36,7 +37,7 @@ class Janji extends Component {
 
   componentDidMount = () => {
     this.getAllJanji();
-    // this.getAllDokter();
+    this.getAllDokter();
     this.getAllTindakan();
   };
 
@@ -45,30 +46,30 @@ class Janji extends Component {
       this.setState({ jenisKelamin: e.target.value }, resolve);
     });
     const jnsKelamin = this.state.jenisKelamin;
-    console.log("JK:", jnsKelamin);
-    await this.getAllDokter(jnsKelamin);
+    const dokters = this.state.dokters;
+
+    const dokterFilter = await dokters.filter(
+      (dokter) => dokter.jenis_kelamin === jnsKelamin
+    );
+
+    await new Promise((resolve) => {
+      this.setState({ dokterFilter: dokterFilter }, resolve);
+    });
   };
 
-  getAllDokter = async (jnsKelamin) => {
+  getAllDokter = async () => {
     try {
       const dokterCollection = collection(db, "dokters");
       const querySnapshot = await getDocs(dokterCollection);
 
       const dokterList = [];
       querySnapshot.forEach((doc) => {
-        const dokterData = doc.data();
-        if (dokterData.jenis_kelamin === jnsKelamin) {
-          dokterList.push({ id: doc.id, ...dokterData });
-        }
+        dokterList.push({ id: doc.id, ...doc.data() });
       });
 
       await new Promise((resolve) => {
         this.setState({ dokters: dokterList }, resolve);
       });
-
-      console.log("Dokter: ", this.state.dokters);
-
-      return dokterList;
     } catch (error) {
       console.error("Error fetching dokter data:", error);
       throw error;
@@ -157,7 +158,6 @@ class Janji extends Component {
         });
       }
 
-      // console.log({ janji: janjiList });
       this.setState({ janjis: janjiList });
     } catch (error) {
       console.error("Error fetching janji data:", error);
@@ -284,8 +284,6 @@ class Janji extends Component {
       waktu_tindakan_ref, // tambahkan waktu_tindakan_ref
     } = janji;
 
-    console.log(janji);
-
     this.setState({
       id: id,
       dokterRef: dokter_ref,
@@ -394,14 +392,18 @@ class Janji extends Component {
       { id: 3, nama: "Dibatalkan" },
     ];
 
-    const ganders = [{ name: "Laki-laki" }, { name: "Perempuan" }];
+    const ganders = [
+      { name: "Semua Terapis" },
+      { name: "Laki-laki" },
+      { name: "Perempuan" },
+    ];
     return (
       <>
         <div>
           <label>Filter jenis kelamin:</label>
           <select
             onChange={this.handleChangeJenisKelamin}
-            value={this.state.bulan}>
+            value={this.state.jenisKelamin}>
             <option>Pilih Jenis Kelamin</option>
             {ganders.map((gander) => (
               <option key={gander.name} value={gander.name}>
@@ -412,20 +414,38 @@ class Janji extends Component {
         </div>
         <hr />
         <form className="form-container">
-          <div>
-            <label>Nama Dokter</label>
-            <select
-              value={this.state.dokterRef}
-              onChange={(e) => this.setState({ dokterRef: e.target.value })}
-              required>
-              <option>Pilih Dokter</option>
-              {this.state.dokters.map((dokter) => (
-                <option key={dokter.id} value={dokter.id}>
-                  {dokter.nama}
-                </option>
-              ))}
-            </select>
-          </div>
+          {this.state.jenisKelamin === "Laki-laki" ||
+          this.state.jenisKelamin === "Perempuan" ? (
+            <div>
+              <label>Nama Dokter</label>
+              <select
+                value={this.state.dokterRef}
+                onChange={(e) => this.setState({ dokterRef: e.target.value })}
+                required>
+                <option>Pilih Dokter</option>
+                {this.state.dokterFilter.map((dokter) => (
+                  <option key={dokter.id} value={dokter.id}>
+                    {dokter.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label>Nama Dokter</label>
+              <select
+                value={this.state.dokterRef}
+                onChange={(e) => this.setState({ dokterRef: e.target.value })}
+                required>
+                <option>Pilih Dokter</option>
+                {this.state.dokters.map((dokter) => (
+                  <option key={dokter.id} value={dokter.id}>
+                    {dokter.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label>Jenis Tindakan</label>
             <select
